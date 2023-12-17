@@ -1,0 +1,169 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <fstream>
+
+using namespace std;
+
+// Базовый класс MenuItem для представления блюда в ресторане
+class MenuItem {
+protected:
+    std::string name;
+    double price;
+    std::string type;
+
+public:
+    MenuItem(const std::string& name, double price, const std::string& type)
+        : name(name), price(price), type(type) {}
+
+    void displayInfo() const {
+        std::cout << "Name: " << name << std::endl;
+        std::cout << "Price: " << price << std::endl;
+        std::cout << "Type: " << type << std::endl;
+    }
+
+    double getPrice() const {
+        return price;
+    }
+};
+
+// Шаблонный класс Pair для связи характеристик блюда
+template <typename T1, typename T2>
+class Pair {
+private:
+    T1 first;
+    T2 second;
+
+public:
+    Pair(const T1& first, const T2& second)
+        : first(first), second(second) {}
+
+    void displayPair() const {
+        std::cout << "First: " << first << std::endl;
+        std::cout << "Second: " << second << std::endl;
+    }
+};
+
+// Класс-наследник Appetizer, представляющий закуску
+class Appetizer : public MenuItem {
+public:
+    Appetizer(const std::string& name, double price)
+        : MenuItem(name, price, "Appetizer") {}
+
+    void displayInfo() const {
+        std::cout << "Appetizer:" << std::endl;
+        MenuItem::displayInfo();
+    }
+};
+
+// Класс-наследник MainCourse, представляющий основное блюдо
+class MainCourse : public MenuItem {
+public:
+    MainCourse(const std::string& name, double price)
+        : MenuItem(name, price, "Main Course") {}
+
+    void displayInfo() const{
+        std::cout << "Main Course:" << std::endl;
+        MenuItem::displayInfo();
+    }
+};
+
+// Класс-наследник Dessert, представляющий десерт
+class Dessert : public MenuItem {
+public:
+    Dessert(const std::string& name, double price)
+        : MenuItem(name, price, "Dessert") {}
+
+    void displayInfo() const{
+        std::cout << "Dessert:" << std::endl;
+        MenuItem::displayInfo();
+    }
+};
+
+// Класс CaloricInfo с информацией о калорийности блюда
+class CaloricInfo {
+private:
+    double calories;
+
+public:
+    CaloricInfo(double calories)
+        : calories(calories) {}
+
+    void displayCalories() const {
+        std::cout << "Calories: " << calories << std::endl;
+    }
+};
+
+// Класс Restaurant для управления данными в ресторане
+class Restaurant {
+private:
+    std::vector<MenuItem*> menu;
+
+public:
+    void addMenuItem(MenuItem* menuItem) {
+        menu.push_back(menuItem);
+    }
+
+    void searchMenuItem(const std::string& menuItemName) {
+        auto it = std::find_if(menu.begin(), menu.end(), [&](const MenuItem* menuItem) {
+            return menuItem->getName() == menuItemName;
+        });
+
+        if (it != menu.end()) {
+            (*it)->displayInfo();
+        } else {
+            std::cout << "Menu item not found." << std::endl;
+        }
+    }
+
+    void sortMenuByPrice() {
+        std::sort(menu.begin(), menu.end(), [](const MenuItem* a, const MenuItem* b) {
+            return a->getPrice() < b->getPrice();
+        });
+    }
+
+    void saveToFile(const std::string& filename) {
+        std::ofstream file(filename);
+
+        if (file.is_open()) {
+            for (const auto& menuItem : menu) {
+                file << menuItem->getName() << "," << menuItem->getPrice() << "," << menuItem->getType() << std::endl;
+            }
+
+            file.close();
+        } else {
+            std::cout << "Failed to open file." << std::endl;
+        }
+    }
+};
+
+int main() {
+    Restaurant restaurant;
+
+    // Создание объектов-блюд
+    MenuItem* appetizer = new Appetizer("Salad", 5.99);
+    MenuItem* mainCourse = new MainCourse("Steak", 15.99);
+    MenuItem* dessert = new Dessert("Ice Cream", 3.99);
+
+    // Добавление блюд в меню ресторана
+    restaurant.addMenuItem(appetizer);
+    restaurant.addMenuItem(mainCourse);
+    restaurant.addMenuItem(dessert);
+
+    // Поиск блюда по названию
+    restaurant.searchMenuItem("Steak");
+
+    // Сортировка меню по цене
+    restaurant.sortMenuByPrice();
+
+    // Сохранение меню в файл
+    restaurant.saveToFile("output.txt");
+
+    // Освобождение памяти
+    delete appetizer;
+    delete mainCourse;
+    delete dessert;
+
+    return 0;
+}
